@@ -6,7 +6,7 @@ require('dotenv').config()
 app.use(cors())  
 app.use(express.json())
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.jtcqgec.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -19,12 +19,14 @@ const client = new MongoClient(uri, {
 });
 const database = client.db("Backpackers");
 const usersCollection = database.collection("users");
+const wishlistCollection = database.collection("wishlist");
+const packagesCollection = database.collection("packages");
+const bookingsCollection = database.collection("bookings");
 async function run() {
   try {
 
     app.post('/users', async(req, res)=>{
         const user = req.body
-        console.log(user)
         const query = {email: user.email} 
         const exist = await usersCollection.findOne(query)
         if(exist){
@@ -34,6 +36,57 @@ async function run() {
             const result = await usersCollection.insertOne(user) 
             res.send(result)
         }
+    })
+    app.post('/wishlist', async(req, res)=>{
+        const wishlist = req.body
+        const result = await wishlistCollection.insertOne(wishlist) 
+        res.send(result)
+    })
+    app.post('/bookings', async(req, res)=>{
+      const booking = req.body
+      const result  = await bookingsCollection.insertOne(booking)
+      res.send(result)
+    })
+
+    app.get('/wishlist/:email', async(req, res)=>{
+        const email = req.params.email
+        const result = await wishlistCollection.find({email}).toArray()
+        res.send(result)
+    })
+    app.get('/packages', async(req, res)=>{
+      const result = await packagesCollection.find().toArray()
+      res.send(result)
+    })
+    app.get('/package/:id', async(req, res)=>{
+      const id = req.params.id
+      const query = {_id : new ObjectId(id)}
+      const result = await packagesCollection.findOne(query)
+      res.send(result)
+    })
+    app.get('/users/:email',  async(req, res)=>{
+      const email = req.params.email
+      const query = {email : email}
+      const result = await usersCollection.findOne(query)
+      res.send(result)
+    })
+    app.delete('/wishlist/:id', async(req, res)=>{
+        const id = req.params.id
+        const query = {_id : new ObjectId(id)}
+        const result = await wishlistCollection.deleteOne(query)
+        res.send(result)
+
+    })
+    app.put('/users/:email', async (req, res)=>{
+      const email = req.params.email
+      const query = req.body
+      const filter = {email : email}
+      const updatedUser = {
+        $set : {
+          requested: query.requested
+        }
+      }
+      const result = await usersCollection.updateOne(filter, updatedUser)
+      res.send(result)
     })
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
