@@ -3,7 +3,10 @@ const cors = require("cors")
 const app = express()
 const port = process.env.PORT || 5000
 require('dotenv').config()
-app.use(cors())  
+app.use(cors({
+  origin: '*',
+  credentials: true
+}))  
 app.use(express.json())
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -44,7 +47,34 @@ async function run() {
     })
     app.post('/bookings', async(req, res)=>{
       const booking = req.body
-      const result  = await bookingsCollection.insertOne(booking)
+      const query = {
+        date : booking.date,
+        email : booking.email
+      }
+      const exist = await bookingsCollection.findOne(query)
+      if(exist){
+        res.send({ acknowledged : false})
+      }else{
+        const result  = await bookingsCollection.insertOne(booking)
+        res.send(result)
+      }
+    })
+    app.get('/bookings/:email', async(req, res)=>{
+      const email = req.params.email
+      const query = {email : email}
+      const result = await bookingsCollection.find(query).toArray()
+      res.send(result)
+    })
+    app.get('/bookings/assigned/:email', async(req, res)=>{
+      const email = req.params.email
+      const query = {guide : email}
+      const result = await bookingsCollection.find(query).toArray()
+      res.send(result)
+    })
+    app.get('/bookings/myBookings/:email', async(req, res)=>{
+      const email = req.params.email
+      const query = {email : email}
+      const result = await bookingsCollection.find(query).toArray()
       res.send(result)
     })
 
@@ -69,12 +99,23 @@ async function run() {
       const result = await usersCollection.findOne(query)
       res.send(result)
     })
+    app.get('/guide', async(req, res)=>{
+      const filter = {role : 'guide'}
+      const result = await usersCollection.find(filter).toArray()
+      res.send(result)
+    })
     app.delete('/wishlist/:id', async(req, res)=>{
         const id = req.params.id
         const query = {_id : new ObjectId(id)}
         const result = await wishlistCollection.deleteOne(query)
         res.send(result)
 
+    })
+    app.delete('/bookings/:id', async (req, res)=>{
+      const id = req.params.id
+      const query =  {_id: new ObjectId(id)}
+      const result = await bookingsCollection.deleteOne(query)
+      res.send(result)
     })
     app.put('/users/:email', async (req, res)=>{
       const email = req.params.email
@@ -86,6 +127,32 @@ async function run() {
         }
       }
       const result = await usersCollection.updateOne(filter, updatedUser)
+      res.send(result)
+    })
+    app.put('/users/update/:email', async(req , res)=>{
+      const email = req.params.email
+      const filter = {email: email}
+      const query = req.body
+      const updatedUser = {
+        $set : {
+          phone : query.phone,
+          experience : query.experience,
+          education : query.education
+        }
+      }
+      const result = await usersCollection.updateOne(filter, updatedUser)
+      res.send(result)
+    })
+    app.put('/bookings/:id', async(req, res)=>{
+      const id = req.params.id
+      const filter = {_id : new ObjectId(id)}
+      const query = req.body
+      const updatedBooking = {
+        $set: {
+          status : query.status
+        }
+      }
+      const result = await bookingsCollection.updateOne(filter, updatedBooking)
       res.send(result)
     })
     // Connect the client to the server	(optional starting in v4.7)
