@@ -119,7 +119,7 @@ async function run() {
       const result = await usersCollection.find().toArray()
       res.send(result)
     })
-    app.get('/guide', async(req, res)=>{
+    app.get('/guide', async(req, res)=>{   
       const filter = {role : 'guide'}
       const result = await usersCollection.find(filter).toArray()
       res.send(result)
