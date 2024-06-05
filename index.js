@@ -59,6 +59,11 @@ async function run() {
         res.send(result)
       }
     })
+    app.post('/packages', async(req, res)=>{
+      const package = req.body
+      const result = await packagesCollection.insertOne(package)
+      res.send(result)
+    })
     app.get('/bookings/:email', async(req, res)=>{
       const email = req.params.email
       const query = {email : email}
@@ -85,6 +90,11 @@ async function run() {
     })
     app.get('/packages', async(req, res)=>{
       const result = await packagesCollection.find().toArray()
+      res.send(result)
+    })
+    app.get('/tours/:type', async(req, res)=>{
+      const type = req.params.type
+      const result = await packagesCollection.find({tour_type : type}).toArray()
       res.send(result)
     })
     app.get('/package/:id', async(req, res)=>{
