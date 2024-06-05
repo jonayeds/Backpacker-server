@@ -25,6 +25,7 @@ const usersCollection = database.collection("users");
 const wishlistCollection = database.collection("wishlist");
 const packagesCollection = database.collection("packages");
 const bookingsCollection = database.collection("bookings");
+const storiesCollection = database.collection("stories");
 async function run() {
   try {
 
@@ -62,6 +63,11 @@ async function run() {
     app.post('/packages', async(req, res)=>{
       const package = req.body
       const result = await packagesCollection.insertOne(package)
+      res.send(result)
+    })
+    app.post('/stories', async(req, res)=>{
+      const story = req.body
+      const result  = await storiesCollection.insertOne(story)
       res.send(result)
     })
     app.get('/bookings/:email', async(req, res)=>{
@@ -117,6 +123,16 @@ async function run() {
       const filter = {role : 'guide'}
       const result = await usersCollection.find(filter).toArray()
       res.send(result)
+    })
+    app.get('/stories', async(req, res)=>{
+      const result = await storiesCollection.find().toArray()
+      res.send(result) 
+    })
+    app.get('/story/:id', async(req, res)=>{
+      const id = req.params.id
+      const query = {_id : new ObjectId(id)}
+      const result = await storiesCollection.findOne(query)
+      res.send(result) 
     })
     app.delete('/wishlist/:id', async(req, res)=>{
         const id = req.params.id
