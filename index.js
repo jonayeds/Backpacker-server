@@ -20,14 +20,14 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
-const database = client.db("Backpackers");
-const usersCollection = database.collection("users");
-const wishlistCollection = database.collection("wishlist");
-const packagesCollection = database.collection("packages");
-const bookingsCollection = database.collection("bookings");
-const storiesCollection = database.collection("stories");
 async function run() {
   try {
+    const database = client.db("Backpackers");
+    const usersCollection = database.collection("users");
+    const wishlistCollection = database.collection("wishlist");
+    const packagesCollection = database.collection("packages");
+    const bookingsCollection = database.collection("bookings");
+    const storiesCollection = database.collection("stories");
 
     app.post('/users', async(req, res)=>{
         const user = req.body
@@ -137,6 +137,7 @@ async function run() {
     app.delete('/wishlist/:id', async(req, res)=>{
         const id = req.params.id
         const query = {_id : new ObjectId(id)}
+        console.log(id)
         const result = await wishlistCollection.deleteOne(query)
         res.send(result)
 
